@@ -1,0 +1,43 @@
+
+services:
+
+  postgres:
+    image: postgres:13.0-alpine
+    hostname: ${POSTGRES_HOST}
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .env
+    
+  redis:
+    image: redis:alpine
+    restart: on-failure
+    ports:
+      - ${REDIS_PORT}:${REDIS_PORT}
+    volumes:
+      - redis_data:/data
+    env_file:
+      - .env
+    
+  app:
+    build:
+      dockerfile: app/Dockerfile
+    container_name: content_storage_app
+    hostname: ${FASTAPI_HOST}
+    # restart: on-failure
+    ports:
+      - ${FASTAPI_PORT}:${FASTAPI_PORT}
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - app_static_data:/app/static/
+
+volumes:
+  postgres_data:
+  redis_data:
+  app_static_data:
